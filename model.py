@@ -52,7 +52,7 @@ def define_model():
     model.summary()
     # compile and run
     model.compile(optimizer='Adam', loss=keras.losses.CategoricalCrossentropy(), metrics=['accuracy'])
-    history = model.fit(x_train, y_train, epochs=10, batch_size=32, validation_split=0.2)
+    history = model.fit(x_train, y_train, epochs=5, batch_size=32, validation_split=0.2)
     return model
 
 
@@ -206,8 +206,23 @@ model.summary()
 
 model = define_model()  
 
-
 # Now proceed with visualizing Grad-CAM heatmaps
 plot_gradcam_images(i_max, j_max, x_train, model, 'conv2d_1')
 
 plot_gradcam_images(i_max, j_max, x_train, model, 'max_pooling2d_1')
+
+def plot_gradcam_heatmaps(i_max, j_max, x_test, model, layer_name):
+    fig, axs = plt.subplots(i_max, j_max, figsize=plt.figaspect(0.5))
+    for i in range(i_max):
+        for j in range(j_max):
+            ind = np.arange(i_max*j_max)[i*j_max+j]
+            img = x_test[ind].reshape(1, 28, 28, 1)
+            heatmap = make_gradcam_heatmap(img, model, layer_name)
+            axs[i, j].imshow(img[0, :, :, 0], aspect='auto', cmap='gray')
+            axs[i, j].imshow(heatmap, alpha=0.6, cmap='jet')
+    plt.tight_layout()
+    plt.show()
+
+plot_gradcam_heatmaps(i_max, j_max, x_train, model, 'conv2d_1')
+
+plot_gradcam_heatmaps(i_max, j_max, x_train, model, 'max_pooling2d_1')
